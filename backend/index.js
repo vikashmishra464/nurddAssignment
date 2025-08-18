@@ -24,8 +24,6 @@ app.post("/api/analyze", async (req, res) => {
     if (!url || !/^https?:\/\/.+\..+/.test(url)) {
       return res.status(400).json({ error: "Invalid URL format" });
     }
-
-    // Run Python scraper
     const python = spawn("python", ["scraper.py", url]);
     let dataString = "";
 
@@ -40,7 +38,6 @@ app.post("/api/analyze", async (req, res) => {
     python.on("close", async (code) => {
       try {
         const result = JSON.parse(dataString);
-        console.log(result)
         if (result.error) {
           return res.status(500).json({ error: result.error });
         }
