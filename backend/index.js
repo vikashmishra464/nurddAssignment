@@ -2,7 +2,7 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import { createClient } from "@supabase/supabase-js";
-
+import { spawn } from "child_process";
 dotenv.config();
 
 const app = express();
@@ -14,12 +14,54 @@ const supabase = createClient(
   process.env.SUPABASE_KEY
 );
 
+
+
 app.post("/api/analyze", async (req, res) => {
-    console.log("api/analyze hit")
-    const data=req.body;
-    console.log(data);
-    res.json(data);
-    res.send(error);
+  try {
+    const { url } = req.body;
+    console.log(req.body)
+
+    if (!url || !/^https?:\/\/.+\..+/.test(url)) {
+      return res.status(400).json({ error: "Invalid URL format" });
+    }
+
+    // Run Python scraper
+    const python = spawn("python", ["scraper.py", url]);
+    let dataString = "";
+
+    python.stdout.on("data", (data) => {
+      dataString += data.toString();
+    });
+
+    python.stderr.on("data", (data) => {
+      console.error(`stderr: ${data}`);
+    });
+
+    python.on("close", async (code) => {
+      try {
+        const result = JSON.parse(dataString);
+        console.log(result)
+        if (result.error) {
+          return res.status(500).json({ error: result.error });
+        }
+
+        const { data, error } = await supabase
+          .from("nurdd")
+          .insert([{ url, brandname: result.brandname, description: result.description, timestamp: new Date().toISOString() }])
+          .select();
+
+        if (error) return res.status(500).json({ error: error.message });
+
+        res.status(201).json(data[0]);
+      } catch (err) {
+        console.error("Parsing error:", err.message);
+        res.status(500).json({ error: "Failed to parse scraper output" });
+      }
+    });
+  } catch (err) {
+    console.error("API error:", err.message);
+    res.status(500).json({ error: "Internal server error" });
+  }
 });
 app.get("/api/data", async (req, res) => {
     console.log("api/data hit")

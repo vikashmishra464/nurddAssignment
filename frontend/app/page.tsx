@@ -11,7 +11,7 @@ import { Loader2, Globe, Calendar, FileText } from "lucide-react"
 import Link from "next/link"
 const backendURL = "http://localhost:5000"
 interface AnalysisResult {
-  brandName: string
+  brandname: string
   description: string
   timestamp: string
 }
@@ -62,6 +62,7 @@ export default function HomePage() {
       }
 
       const data = await response.json()
+      console.log(data);
       setResult(data)
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred")
@@ -156,7 +157,7 @@ export default function HomePage() {
                     <FileText className="h-4 w-4" />
                     Brand Name
                   </div>
-                  <p className="text-lg font-semibold">{result.brandName}</p>
+                  <p className="text-lg font-semibold">{result.brandname}</p>
                 </div>
                 <div className="space-y-2">
                   <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
