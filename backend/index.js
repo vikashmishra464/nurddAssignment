@@ -38,6 +38,7 @@ app.post("/api/analyze", async (req, res) => {
     python.on("close", async (code) => {
       try {
         const result = JSON.parse(dataString);
+        console.log(result)
         if (result.error) {
           return res.status(500).json({ error: result.error });
         }
@@ -67,7 +68,6 @@ app.get("/api/data", async (req, res) => {
     .select("*")
     .order("timestamp", { ascending: false });
   if (error) return res.status(500).json({ error: error.message });
-  console.log(data);
   res.json(data);
 });
 

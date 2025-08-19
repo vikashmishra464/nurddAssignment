@@ -9,7 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Loader2, Globe, Calendar, FileText } from "lucide-react"
 import Link from "next/link"
-const backendURL = "http://localhost:5000"
+const backendURL = "https://nurddassignment.onrender.com"
 interface AnalysisResult {
   brandname: string
   description: string
