@@ -38,7 +38,7 @@ app.post("/api/analyze", async (req, res) => {
     python.on("close", async (code) => {
       try {
         const result = JSON.parse(dataString);
-        console.log(result)
+        // console.log(result)
         if (result.error) {
           return res.status(500).json({ error: result.error });
         }

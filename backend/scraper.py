@@ -2,16 +2,24 @@ import sys
 import requests
 import json
 import os
+import random
+import time
 from bs4 import BeautifulSoup
 from requests.exceptions import RequestException
 
 # This is a placeholder for your Gemini API key.
-# You should get this from your environment variables or a secure file.
-# Do NOT hardcode your key here in a production environment.
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
 # The URL for the Gemini API
 GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent"
+
+# A list of realistic User-Agents to rotate through
+USER_AGENTS = [
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36',
+    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36',
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Edge/109.0.1518.78',
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Firefox/108.0'
+]
 
 def enhance_description(description):
     """
@@ -58,7 +66,6 @@ def enhance_description(description):
         
         result = response.json()
         
-        # Extract the enhanced text from the API response
         enhanced_text = result.get("candidates", [{}])[0].get("content", {}).get("parts", [{}])[0].get("text")
         
         if enhanced_text:
@@ -67,12 +74,12 @@ def enhance_description(description):
             return description
             
     except RequestException as e:
-        print(f"Error calling Gemini API: {e}", file=sys.stderr)
+        # A more detailed error message for better debugging
+        print(f"Error calling Gemini API: {e} - Status Code: {e.response.status_code if e.response else 'N/A'}", file=sys.stderr)
         return description + " (Note: Gemini API call failed, description not enhanced.)"
     except (json.JSONDecodeError, IndexError) as e:
         print(f"Error parsing Gemini API response: {e}", file=sys.stderr)
         return description + " (Note: Gemini API response parsing failed, description not enhanced.)"
-
 
 def scrape(url):
     """
@@ -82,7 +89,17 @@ def scrape(url):
         url (str): The URL of the website to scrape.
     """
     try:
-        response = requests.get(url, timeout=10)
+        # Add a random delay before the request to mimic human behavior
+        sleep_time = random.uniform(2, 5)
+        time.sleep(sleep_time)
+        
+        # Use a random User-Agent from the list
+        headers = {
+            'User-Agent': random.choice(USER_AGENTS)
+        }
+        
+        # Pass headers to the requests.get() method
+        response = requests.get(url, headers=headers, timeout=10)
         response.raise_for_status()
         soup = BeautifulSoup(response.text, "html.parser")
 
@@ -100,7 +117,6 @@ def scrape(url):
             soup.find("p").get_text(strip=True) if soup.find("p") else "No description found"
         )
         
-        # Enhance the scraped description using the Gemini API
         enhanced_description = enhance_description(description)
 
         result = {
@@ -108,10 +124,12 @@ def scrape(url):
             "description": enhanced_description
         }
         
-        # Print the final result as a JSON string
         print(json.dumps(result))
+    except RequestException as e:
+        # Catch specific HTTP errors and provide more detail
+        error_message = f"HTTP Error: {e.response.status_code} - {e.response.reason}" if e.response else str(e)
+        print(json.dumps({"error": f"Failed to scrape {url}. Reason: {error_message}"}))
     except Exception as e:
-        # Catch and print any errors in JSON format
         print(json.dumps({"error": str(e)}))
 
 if __name__ == "__main__":
