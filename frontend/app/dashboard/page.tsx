@@ -41,12 +41,10 @@ export default function DashboardPage() {
   const fetchWebsites = async () => {
     try {
       const response = await fetch(`${backendURL}/api/data`)
-      console.log(`${backendURL}/api/data`)
       if (!response.ok) {
         throw new Error("Failed to fetch websites")
       }
       const data = await response.json()
-      console.log(data);
       setWebsites(data)
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred")
