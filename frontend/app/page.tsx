@@ -62,7 +62,7 @@ export default function HomePage() {
       }
 
       const data = await response.json()
-      console.log(data);
+      // console.log(data);
       setResult(data)
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred")
