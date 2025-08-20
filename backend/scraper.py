@@ -7,13 +7,9 @@ import time
 from bs4 import BeautifulSoup
 from requests.exceptions import RequestException
 
-# This is a placeholder for your Gemini API key.
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
-
-# The URL for the Gemini API
 GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent"
 
-# A list of realistic User-Agents to rotate through
 USER_AGENTS = [
     'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36',
     'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36',
@@ -22,15 +18,6 @@ USER_AGENTS = [
 ]
 
 def enhance_description(description):
-    """
-    Uses the Gemini API to enhance a given text description for better readability.
-    
-    Args:
-        description (str): The text description to enhance.
-        
-    Returns:
-        str: The enhanced description or the original description if the API call fails.
-    """
     if not GEMINI_API_KEY:
         return description + " (Note: API key missing, description not enhanced.)"
 
@@ -39,7 +26,6 @@ def enhance_description(description):
             "Content-Type": "application/json"
         }
         
-        # The prompt to send to the Gemini API
         prompt_text = (
             "Enhance the following website description for better readability and clarity. "
             "Keep the tone professional but easy to understand. "
@@ -74,7 +60,6 @@ def enhance_description(description):
             return description
             
     except RequestException as e:
-        # A more detailed error message for better debugging
         print(f"Error calling Gemini API: {e} - Status Code: {e.response.status_code if e.response else 'N/A'}", file=sys.stderr)
         return description + " (Note: Gemini API call failed, description not enhanced.)"
     except (json.JSONDecodeError, IndexError) as e:
@@ -82,12 +67,6 @@ def enhance_description(description):
         return description + " (Note: Gemini API response parsing failed, description not enhanced.)"
 
 def scrape(url):
-    """
-    Scrapes a website for its brand name and description, then enhances the description.
-    
-    Args:
-        url (str): The URL of the website to scrape.
-    """
     try:
         # Add a random delay before the request to mimic human behavior
         sleep_time = random.uniform(2, 5)
