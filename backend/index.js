@@ -14,7 +14,7 @@ const supabase = createClient(
   process.env.SUPABASE_KEY
 );
 
-app.post("/",(req,res)=>{
+app.get("/",(req,res)=>{
   res.send("Backend Connected")
 })
 
